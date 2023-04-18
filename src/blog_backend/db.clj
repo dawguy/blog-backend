@@ -8,14 +8,47 @@
   "SQLite database connection spec."
   {:dbtype "sqlite" :dbname "blog_db"})
 
+(def post-table (str "
+create table post (
+  post_id integer primary key autoincrement,
+  summary text,
+  type text,
+  title text,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+)"))
+
+(def content-table (str "
+create table content (
+  content_id integer primary key autoincrement,
+  type text,
+  order_id integer,
+  post_id integer,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+  FOREIGN KEY(post_id) REFERENCES post(post_id)
+)"))
+
+(def line-table (str "
+create table line (
+  line_id integer primary key autoincrement,
+  content_id integer,
+  line text,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+  FOREIGN KEY(content_id) REFERENCES content(content_id)
+)"))
+
 (defn populate [db]
   (try
     (jdbc/execute-one! (db)
-                       [(str "
-create table department (
-  id            integer primary key autoincrement,
-  name          varchar(64)
-)")])))
+                       [post-table]))
+  (try
+    (jdbc/execute-one! (db)
+                       [content-table]))
+  (try
+    (jdbc/execute-one! (db)
+                       [line-table])))
 
 (defrecord Database [db-spec     ; configuration
                      datasource] ; state
