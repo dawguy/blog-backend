@@ -26,4 +26,5 @@
   (def system (new-system 8888))
   (alter-var-root #'system component/start)
   (alter-var-root #'system component/stop)
+  (def db (get-in system [:database :datasource]))
   ,)

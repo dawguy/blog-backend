@@ -1,7 +1,9 @@
 (ns blog-backend.db
-  (:require [com.stuartsierra.component :as component]
+  (:require [clojure.string :as string]
+            [com.stuartsierra.component :as component]
             [ring.adapter.jetty :refer [run-jetty]]
             [next.jdbc :as jdbc]
+            [next.jdbc.sql :as sql]
             ))
 
 (def ^:private my-local-db
@@ -41,14 +43,18 @@ create table line (
 
 (defn populate [db]
   (try
-    (jdbc/execute-one! (db)
-                       [post-table]))
+    (jdbc/execute-one! db
+                       [post-table])
+    (catch Exception e (str "Exception: " (.getMessage e))))
   (try
-    (jdbc/execute-one! (db)
-                       [content-table]))
+    (jdbc/execute-one! db
+                       [content-table])
+    (catch Exception e (str "Exception: " (.getMessage e))))
   (try
-    (jdbc/execute-one! (db)
-                       [line-table])))
+    (jdbc/execute-one! db
+                       [line-table])
+    (catch Exception e (str "Exception: " (.getMessage e))))
+  )
 
 (defrecord Database [db-spec     ; configuration
                      datasource] ; state
@@ -58,7 +64,7 @@ create table line (
       this ; already initialized
       (let [database (assoc this :datasource (jdbc/get-datasource db-spec))]
         (prn database)
-        (populate database)
+        (populate (:datasource database))
         database)))
   (stop [this]
     (assoc this :datasource nil))
@@ -70,3 +76,40 @@ create table line (
 (defn setup []
   (component/using (map->Database {:db-spec my-local-db})
                    []))
+
+(defn parse-draft-post [text]
+  (->>
+      (clojure.string/split text #"---")
+      (map #(clojure.string/split % #"\n"))
+      (map #(filter not-empty %))
+      (filter not-empty)
+      (map (fn [block] {:type  (first block)
+                        :lines (rest block)}))))
+
+(defn save-post [db post]
+  (let [type (:type post)
+        title (first (:lines post))]
+    (sql/insert! db :post {:type type
+                             :title title})))
+
+(defn save-line [db line]
+  (sql/insert! db :line (dissoc line :line_id)))
+
+(def a-content (atom {}))
+
+(comment ""
+         (def content @a-content)
+         ,)
+
+(defn save-content [db content]
+  (reset! a-content content)
+  (let [insert-c (sql/insert! db :content (dissoc content :content_id :lines))
+        content-id (second (first insert-c))]
+    (prn (str "Inserted " insert-c))
+    (loop [[line & rem] (:lines content)
+           i 0]
+      (if (not (nil? line))
+        (do
+          (save-line db (assoc {} :line line :content_id content-id))
+          (recur rem (inc i)))))))
+

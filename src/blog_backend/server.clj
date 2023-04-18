@@ -3,7 +3,8 @@
             [ring.adapter.jetty :refer [run-jetty]]
             [ring.middleware.json :as rjson]
             [ring.middleware.defaults :as ring-defaults]
-            [compojure.core :refer [GET POST let-routes]]
+            [compojure.coercions :refer [as-int]]
+            [compojure.core :refer [GET POST DELETE let-routes]]
             [compojure.route :as route]
             [blog-backend.controller :as c]
             ))
@@ -27,13 +28,18 @@
         (assoc this :http-server nil))
       this)))
 
+(defn my-print-handler [handler]
+  (fn [req]
+    (prn "my-middleware req")
+    (prn req)
+    (handler req)))
+
 (defn my-middleware [handler] "Allows easier wrapping of handler output"
   (prn "my-middleware setup")
-  (rjson/wrap-json-response
-    (fn [req]
-      (prn "my-middleware req")
-      (handler req)
-      )))
+  (-> handler
+    (rjson/wrap-json-body)
+    (rjson/wrap-json-response)
+    (#'my-print-handler)))
 
 (defn add-app-component [handler application]
   (prn "adding app component")
@@ -51,13 +57,19 @@
                                          ;; disable XSRF for now
                                          (assoc-in [:security :anti-forgery] false)
                                          ;; support load balancers
+                                         (assoc-in [:params :multipart] true)
                                          (assoc-in [:proxy] true)
                                          (assoc-in [:responses :content-types] true))))))
 
 (defn handler [application]
   (prn "handler setup")
-  (let-routes [wrapped-handler (middleware-stack application #'my-middleware)]
-    (GET "/" [] (wrapped-handler #'c/default))
+  (let-routes [wrap (middleware-stack application #'my-middleware)]
+    (GET "/" [] (wrap #'c/default))
+    (POST "/" [] (wrap #'c/default))
+    (GET "/post/:id{[0-9]+}" [post-id :<< as-int] (wrap #'c/get-post-by-id))
+    (GET "/post/:name" [post-name] (wrap #'c/get-post-by-name))
+    (POST "/post/save" [] (wrap #'c/save-post))
+    (DELETE "/post/:id{[0-9]+}" [] (wrap #'c/delete-post))
     (route/not-found (do "NOT FOUND"))
   )
 )
