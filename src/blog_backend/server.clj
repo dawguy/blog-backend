@@ -68,6 +68,7 @@
     (POST "/" [] (wrap #'c/default))
     (GET "/post/id/:post-id{[0-9]+}" [post-id :<< as-int] (wrap #'c/get-post-by-id))
     (GET "/post/name/:post-url" [post-url] (wrap #'c/get-post-by-name))
+    (GET "/post/recent" [] (wrap #'c/get-recent-posts))
     (POST "/post/save" [] (wrap #'c/save-post))
     (DELETE "/post/:id{[0-9]+}" [] (wrap #'c/delete-post))
     (route/not-found (do "NOT FOUND"))

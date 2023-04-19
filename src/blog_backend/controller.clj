@@ -52,5 +52,9 @@
         contents (d/get-post-contents-by-id db post-id)]
     (resp/response {:post post
                     :contents contents})))
-(defn get-recent-posts [req] nil)
+
+(defn get-recent-posts [req]
+  (let [db (get-in req [:application/component :database :datasource])]
+    (resp/response (d/get-recent-posts db))))
+
 (defn delete-post [req] nil)
