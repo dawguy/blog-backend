@@ -15,7 +15,14 @@
          (def contents @a-contents)
          (def db (get-in @a-req [:application/component :database :datasource]))
          (def post-id (second (first @a-saved-post)))
+         (def post-id (get-in req [:params :post-id]))
          ,)
+
+(defn get-post-by-name [req]
+  (reset! a-req req)
+  (let [name (get-in req [:body "name"])
+        db (get-in req [:application/component :database :datasource])]
+    (d/get-post-by-name db name)))
 
 ;curl -X POST localhost:8888/post/save -d '{"text": "blog\nTest Draft Post\n---\nsection-header\nHello world!\n---\ntext\nMy name is david.\n---\ntext\nMy online names are bloodisblue or dawguy.\n---\nimage\nabcdef.png\nA scorpion deer\n---\nindent\nThis is what an indented div looks like.\n---\nsection-header\nCode snippets\n---\ncode-clojure\n(prn (str \"I did\" (inc 2) \"lines here!\"))\n---\ncode-typescript\nconsole.out.println(\"Yoyo\");\nconsole.out.println(\"ABC\");\n---\ntext\nEnding with some text.\n---\n"}' -H 'Content-Type: application/json'
 (defn save-post [req]
@@ -34,7 +41,14 @@
             (recur rem (inc i)))))
     (resp/response {:post post-id})))
 
-(defn get-post-by-id [req] nil)
+(defn get-post-by-id [req]
+  (reset! a-req req)
+  (let [post-id (get-in req [:params :post-id])
+        db (get-in req [:application/component :database :datasource])
+        post (d/get-post-by-id db post-id)
+        contents (d/get-post-contents-by-id db post-id)]
+    (resp/response {:post post
+                    :contents contents})))
 (defn get-post-by-name [req] nil)
 (defn get-recent-posts [req] nil)
 (defn delete-post [req] nil)

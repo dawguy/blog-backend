@@ -4,6 +4,7 @@
             [ring.adapter.jetty :refer [run-jetty]]
             [next.jdbc :as jdbc]
             [next.jdbc.sql :as sql]
+            [next.jdbc.result-set :as rs]
             ))
 
 (def ^:private my-local-db
@@ -85,6 +86,49 @@ create table line (
       (filter not-empty)
       (map (fn [block] {:type  (first block)
                         :lines (rest block)}))))
+
+(def a-contents (atom {}))
+(def a-lines (atom {}))
+(def a-post (atom {}))
+
+(comment ""
+  (def contents @a-contents)
+  (def lines @a-lines)
+  (def post @a-post)
+,)
+
+(defn get-post-contents-by-id [db post-id]
+  (try
+
+    (let [contents (jdbc/execute! db ["select * from content c
+                                        where c.post_id = ?"
+                                    post-id]
+                                  {:builder-fn rs/as-unqualified-maps })
+          lines (jdbc/execute! db ["select l.* from line l
+                                         join content c
+                                           on c.content_id = l.content_id
+                                        where c.post_id = ?"
+                                      post-id]
+                               {:builder-fn rs/as-unqualified-maps })]
+      (reset! a-contents contents)
+      (reset! a-lines lines)
+      (let [l (group-by :content_id lines)]
+         (reduce (fn [acc v] (conj acc (assoc v :lines (get l (:content_id v))))) [] contents)
+        ))
+    (catch Exception e (str "Exception: " (.getMessage e)))))
+
+(defn get-post-by-id [db post-id]
+  (try
+    (let [post (jdbc/execute! db ["select p.* from post p
+                                        where p.post_id = ?"
+                                  post-id]
+                                 {:builder-fn rs/as-unqualified-maps })]
+      (reset! a-post post)
+      post)
+    (catch Exception e (str "Exception: " (.getMessage e)))))
+
+(defn get-post-by-name [db name]
+  nil)
 
 (defn save-post [db post]
   (let [type (:type post)

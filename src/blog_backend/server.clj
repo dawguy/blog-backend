@@ -66,8 +66,8 @@
   (let-routes [wrap (middleware-stack application #'my-middleware)]
     (GET "/" [] (wrap #'c/default))
     (POST "/" [] (wrap #'c/default))
-    (GET "/post/:id{[0-9]+}" [post-id :<< as-int] (wrap #'c/get-post-by-id))
-    (GET "/post/:name" [post-name] (wrap #'c/get-post-by-name))
+    (GET "/post/id/:post-id{[0-9]+}" [post-id :<< as-int] (wrap #'c/get-post-by-id))
+    (GET "/post/name/:post-name" [post-name] (wrap #'c/get-post-by-name))
     (POST "/post/save" [] (wrap #'c/save-post))
     (DELETE "/post/:id{[0-9]+}" [] (wrap #'c/delete-post))
     (route/not-found (do "NOT FOUND"))
