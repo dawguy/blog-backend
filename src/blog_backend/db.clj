@@ -16,6 +16,7 @@ create table post (
   post_id integer primary key autoincrement,
   summary text,
   type text,
+  url text,
   title text,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
@@ -128,13 +129,22 @@ create table line (
     (catch Exception e (str "Exception: " (.getMessage e)))))
 
 (defn get-post-by-name [db name]
-  nil)
+  (try
+    (let [post (jdbc/execute-one! db ["select p.* from post p
+                                        where p.url = ?"
+                                  name]
+                              {:builder-fn rs/as-unqualified-maps })]
+      (reset! a-post post)
+      post)
+    (catch Exception e (str "Exception: " (.getMessage e)))))
 
 (defn save-post [db post]
   (let [type (:type post)
-        title (first (:lines post))]
+        url (first (:lines post))
+        title (second (:lines post))]
     (sql/insert! db :post {:type type
-                             :title title})))
+                           :url url
+                           :title title})))
 
 (defn save-line [db line]
   (sql/insert! db :line (dissoc line :line_id)))
