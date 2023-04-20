@@ -2,7 +2,8 @@
   (:require [com.stuartsierra.component :as component]
             [blog-backend.db :as db]
             [blog-backend.server :as server]
-            ))
+            )
+  (:gen-class))
 
 (defrecord Application [config database state]
   component/Lifecycle
@@ -22,6 +23,13 @@
    (component/system-map :application (application {:repl repl})
                          :web-server (server/setup port)
                          :database (db/setup))))
+
+
+(defn -main []
+  (def system (new-system 8888))
+  (alter-var-root #'system component/start)
+)
+
 (comment
   (def system (new-system 8888))
   (alter-var-root #'system component/start)

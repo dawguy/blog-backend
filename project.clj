@@ -11,4 +11,5 @@
                  [ring/ring-json "0.5.1"]
                  [cheshire/cheshire "5.7.1"]
                  [org.xerial/sqlite-jdbc "3.40.0.0"]]
-  :repl-options {:init-ns blog-backend.main})
+  :repl-options {:init-ns blog-backend.main}
+  :main  blog-backend.main)
