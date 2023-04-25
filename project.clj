@@ -9,6 +9,7 @@
                  [ring "1.9.6"]
                  [ring/ring-defaults "0.3.4"]
                  [ring/ring-json "0.5.1"]
+                 [ring-cors "0.1.13"]
                  [cheshire/cheshire "5.7.1"]
                  [org.xerial/sqlite-jdbc "3.40.0.0"]]
   :repl-options {:init-ns blog-backend.main}

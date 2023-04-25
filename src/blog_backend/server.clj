@@ -2,6 +2,7 @@
   (:require [com.stuartsierra.component :as component]
             [ring.adapter.jetty :refer [run-jetty]]
             [ring.middleware.json :as rjson]
+            [ring.middleware.cors :refer [wrap-cors]]
             [ring.middleware.defaults :as ring-defaults]
             [compojure.coercions :refer [as-int]]
             [compojure.core :refer [GET POST DELETE let-routes]]
@@ -34,12 +35,17 @@
     (prn req)
     (handler req)))
 
+(defn my-cors-handler [handler]
+  (wrap-cors handler :access-control-allow-origin #"http://localhost:4200"
+                           :access-control-allow-methods [:get :put :post :delete]))
+
 (defn my-middleware [handler] "Allows easier wrapping of handler output"
   (prn "my-middleware setup")
   (-> handler
     (rjson/wrap-json-body)
     (rjson/wrap-json-response)
-    (#'my-print-handler)))
+    (#'my-print-handler)
+    (#'my-cors-handler)))
 
 (defn add-app-component [handler application]
   (prn "adding app component")

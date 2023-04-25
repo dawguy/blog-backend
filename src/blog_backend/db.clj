@@ -167,10 +167,16 @@ create table line (
           (save-line db (assoc {} :line line :content_id content-id))
           (recur rem (inc i)))))))
 
-(defn get-recent-posts [db]
+(defn get-recent-posts [db limit type]
   (try
-    (jdbc/execute! db ["select p.* from post p order by updated_at desc limit 5"]
-                   {:builder-fn rs/as-unqualified-maps })
+    (if (nil? type)
+      (jdbc/execute! db ["select p.* from post p order by updated_at desc limit ?"
+                         limit]
+                     {:builder-fn rs/as-unqualified-maps})
+      (jdbc/execute! db ["select p.* from post p where type = ? order by updated_at desc limit ?"
+                         type
+                         limit]
+                     {:builder-fn rs/as-unqualified-maps}))
     (catch Exception e (str "Exception: " (.getMessage e))))
 )
 
