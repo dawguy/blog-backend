@@ -1,4 +1,4 @@
-FROM clojure
+FROM --platform=linux/amd64 clojure
 
 RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
