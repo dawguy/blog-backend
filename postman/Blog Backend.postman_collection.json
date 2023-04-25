@@ -1,0 +1,127 @@
+{
+	"info": {
+		"_postman_id": "72ee6a06-1039-4abb-8eaf-ee4f0376322d",
+		"name": "Blog Backend",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Recent",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8888/post/recent",
+					"host": [
+						"localhost"
+					],
+					"port": "8888",
+					"path": [
+						"post",
+						"recent"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Recent By Type",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8888/post/recent?type=project",
+					"host": [
+						"localhost"
+					],
+					"port": "8888",
+					"path": [
+						"post",
+						"recent"
+					],
+					"query": [
+						{
+							"key": "type",
+							"value": "project"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Save Post",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "",
+						"value": "blog\nTest Draft Post\n---\nsection-header\nHello world!\n---\ntext\nMy name is david.\n---\ntext\nMy online names are bloodisblue or dawguy.\n---\nimage\nabcdef.png\nA scorpion deer\n---\nindent\nThis is what an indented div looks like.\n---\nsection-header\nCode snippets\n---\ncode-clojure\n(prn (str \"I did\" (inc 2) \"lines here!\"))\n---\ncode-typescript\nconsole.out.println(\"Yoyo\");\nconsole.out.println(\"ABC\");\n---\ntext\nEnding with some text.\n---\n",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"text\": \"project\\ntest-draft-post\\nTest Draft Post\\n---\\nsection-header\\nHello world!\\n---\\ntext\\nMy name is david.\\n---\\ntext\\nMy online names are bloodisblue or dawguy.\\n---\\nimage\\nabcdef.png\\nA scorpion deer\\n---\\nindent\\nThis is what an indented div looks like.\\n---\\nsection-header\\nCode snippets\\n---\\ncode-clojure\\n(prn (str \\\"I did\\\" (inc 2) \\\"lines here!\\\"))\\n---\\ncode-typescript\\nconsole.out.println(\\\"Yoyo\\\");\\nconsole.out.println(\\\"ABC\\\");\\n---\\ntext\\nEnding with some text.\\n---\\n\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8888/post/save",
+					"host": [
+						"localhost"
+					],
+					"port": "8888",
+					"path": [
+						"post",
+						"save"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Post By ID",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8888/post/id/5",
+					"host": [
+						"localhost"
+					],
+					"port": "8888",
+					"path": [
+						"post",
+						"id",
+						"5"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Post By Name",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8888/post/name/test-draft-post",
+					"host": [
+						"localhost"
+					],
+					"port": "8888",
+					"path": [
+						"post",
+						"name",
+						"test-draft-post"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
