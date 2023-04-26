@@ -5,7 +5,7 @@
             [ring.middleware.cors :refer [wrap-cors]]
             [ring.middleware.defaults :as ring-defaults]
             [compojure.coercions :refer [as-int]]
-            [compojure.core :refer [GET POST DELETE let-routes]]
+            [compojure.core :refer [GET POST DELETE routes]]
             [compojure.route :as route]
             [blog-backend.controller :as c]
             ))
@@ -35,17 +35,12 @@
     (prn req)
     (handler req)))
 
-(defn my-cors-handler [handler]
-  (wrap-cors handler :access-control-allow-origin #"http://localhost:4200"
-                           :access-control-allow-methods [:get :put :post :delete]))
-
 (defn my-middleware [handler] "Allows easier wrapping of handler output"
   (prn "my-middleware setup")
   (-> handler
     (rjson/wrap-json-body)
     (rjson/wrap-json-response)
-    (#'my-print-handler)
-    (#'my-cors-handler)))
+    (#'my-print-handler)))
 
 (defn add-app-component [handler application]
   (prn "adding app component")
@@ -69,17 +64,21 @@
 
 (defn handler [application]
   (prn "handler setup")
-  (let-routes [wrap (middleware-stack application #'my-middleware)]
-    (GET "/" [] (wrap #'c/default))
-    (POST "/" [] (wrap #'c/default))
-    (GET "/post/id/:post-id{[0-9]+}" [post-id :<< as-int] (wrap #'c/get-post-by-id))
-    (GET "/post/name/:post-url" [post-url] (wrap #'c/get-post-by-name))
-    (GET "/post/recent" [] (wrap #'c/get-recent-posts))
-    (POST "/post/save" [] (wrap #'c/save-post))
-    (DELETE "/post/:id{[0-9]+}" [] (wrap #'c/delete-post))
-    (route/not-found (do "NOT FOUND"))
+  (wrap-cors
+    (let [wrap (middleware-stack application #'my-middleware)]
+      (routes
+        (GET "/" [] (wrap #'c/default))
+        (POST "/" [] (wrap #'c/default))
+        (GET "/post/id/:post-id{[0-9]+}" [post-id :<< as-int] (wrap #'c/get-post-by-id))
+        (GET "/post/name/:post-url" [post-url] (wrap #'c/get-post-by-name))
+        (GET "/post/recent" [] (wrap #'c/get-recent-posts))
+        (POST "/post/save" [] (wrap #'c/save-post))
+        (DELETE "/post/:id{[0-9]+}" [] (wrap #'c/delete-post))
+        (route/not-found (do "NOT FOUND"))
+        ))
+    :access-control-allow-origin #"http://localhost:4200"
+    :access-control-allow-methods [:get :put :post :delete :patch])
   )
-)
 
 (defn setup [port]
   (component/using (map->WebServer {:handler-fn #'handler

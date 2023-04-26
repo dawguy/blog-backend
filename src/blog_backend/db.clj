@@ -140,11 +140,13 @@ create table line (
 
 (defn save-post [db post]
   (let [type (:type post)
-        url (first (:lines post))
-        title (second (:lines post))]
+        title (nth (:lines post) 0)
+        url (nth (:lines post) 1)
+        summary (nth (:lines post) 2)]
     (sql/insert! db :post {:type type
                            :url url
-                           :title title})))
+                           :title title
+                           :summary summary})))
 
 (defn save-line [db line]
   (sql/insert! db :line (dissoc line :line_id)))
@@ -167,15 +169,18 @@ create table line (
           (save-line db (assoc {} :line line :content_id content-id))
           (recur rem (inc i)))))))
 
-(defn get-recent-posts [db limit type]
+(defn get-recent-posts [db v]
   (try
-    (if (nil? type)
-      (jdbc/execute! db ["select p.* from post p order by updated_at desc limit ?"
-                         limit]
+    (if (nil? (:type v))
+      (jdbc/execute! db ["select p.* from post p order by updated_at desc limit ? offset ?"
+                         (:limit v)
+                         (* (:limit v) (:page v))
+                         ]
                      {:builder-fn rs/as-unqualified-maps})
-      (jdbc/execute! db ["select p.* from post p where type = ? order by updated_at desc limit ?"
-                         type
-                         limit]
+      (jdbc/execute! db ["select p.* from post p where type = ? order by updated_at desc limit ? offset ?"
+                         (:type v)
+                         (:limit v)
+                         (* (:limit v) (:page v))]
                      {:builder-fn rs/as-unqualified-maps}))
     (catch Exception e (str "Exception: " (.getMessage e))))
 )

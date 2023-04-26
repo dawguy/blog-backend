@@ -56,7 +56,9 @@
 (defn get-recent-posts [req]
   (reset! a-req req)
   (let [db (get-in req [:application/component :database :datasource])
-        type (get-in req [:params :type] nil)]
-    (resp/response (d/get-recent-posts db 5 type))))
+        type (get-in req [:params :type] nil)
+        page (get-in req [:params :page] 0)
+        limit (if (nil? page) 5 10)]
+    (resp/response (d/get-recent-posts db {:limit limit, :page page, :type type}))))
 
 (defn delete-post [req] nil)
