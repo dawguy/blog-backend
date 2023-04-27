@@ -173,13 +173,13 @@ create table line (
   (try
     (if (nil? (:type v))
       (jdbc/execute! db ["select p.* from post p order by updated_at desc limit ? offset ?"
-                         (:limit v)
+                         (inc (:limit v))
                          (* (:limit v) (:page v))
                          ]
                      {:builder-fn rs/as-unqualified-maps})
       (jdbc/execute! db ["select p.* from post p where type = ? order by updated_at desc limit ? offset ?"
                          (:type v)
-                         (:limit v)
+                         (inc (:limit v))
                          (* (:limit v) (:page v))]
                      {:builder-fn rs/as-unqualified-maps}))
     (catch Exception e (str "Exception: " (.getMessage e))))
